@@ -1,6 +1,8 @@
 import { useState } from "react"
+import Papa from "papaparse"
 
 function App() {
+	// State variables
 	const [step, setStep] = useState(1)
 	const [projectInfo, setProjectInfo] = useState({
 		projectName: "",
@@ -8,7 +10,7 @@ function App() {
 		client: "",
 		constructor: "",
 	})
-	const [csvFile, setCsvFile] = useState(null)
+	const [, setCsvFile] = useState(null)
 	const [minMaxValues, setMinMaxValues] = useState({
 		max_X: 0,
 		min_X: 0,
@@ -18,21 +20,67 @@ function App() {
 		min_Z: 0,
 	})
 
+	// Handle input field changes
 	const handleInputChange = (e) => {
 		const { name, value } = e.target
 		setProjectInfo((prevInfo) => ({ ...prevInfo, [name]: value }))
 	}
 
+	// Handle file upload
 	const handleFileUpload = (e) => {
 		const file = e.target.files[0]
 		if (file) {
-			
-			setCsvFile(file)
+			const reader = new FileReader()
+			reader.onload = function (e) {
+				const content = e.target.result
+				// Parse CSV content using PapaParse library
+				Papa.parse(content, {
+					header: true,
+					dynamicTyping: true,
+					complete: (result) => {
+						const csvData = result.data
+
+						// Extract X, Y, Z values from CSV data
+						const { X, Y, Z } = csvData.reduce(
+							(acc, entry) => {
+								const { X, Y, Z } = entry
+								acc.X.push(X)
+								acc.Y.push(Y)
+								acc.Z.push(Z)
+								return acc
+							},
+							{ X: [], Y: [], Z: [] }
+						)
+						console.log("Suka ~ file: App.jsx:54 ~ X:", X)
+
+						// Calculate min and max values for X, Y, Z
+						const minX = Math.min(...X)
+						console.log("Suka ~ file: App.jsx:59 ~ minX:", minX)
+						const maxX = Math.max(...X)
+						const minY = Math.min(...Y)
+						const maxY = Math.max(...Y)
+						const minZ = Math.min(...Z)
+						const maxZ = Math.max(...Z)
+
+						// Update minMaxValues state
+						setMinMaxValues({
+							min_X: minX,
+							max_X: maxX,
+							min_Y: minY,
+							max_Y: maxY,
+							min_Z: minZ,
+							max_Z: maxZ,
+						})
+						setCsvFile(csvData)
+					},
+				})
+			}
+			reader.readAsText(file) // Read file as text
 		}
 	}
 
+	// Handle moving to the next step
 	const handleNextStep = () => {
-		// Move to next step
 		setStep(step + 1)
 	}
 
