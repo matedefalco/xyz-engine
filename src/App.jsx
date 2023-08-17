@@ -3,7 +3,6 @@ import Papa from "papaparse"
 import { useNavigate } from "react-router-dom"
 
 function App() {
-	// State variables
 	const [step, setStep] = useState(1)
 	const [projectInfo, setProjectInfo] = useState({
 		projectName: "",
@@ -20,30 +19,43 @@ function App() {
 		max_Z: 0,
 		min_Z: 0,
 	})
+	const [step1Errors, setStep1Errors] = useState({})
+	const [step2Errors, setStep2Errors] = useState({})
 
 	const navigate = useNavigate()
 
-	// Handle input field changes
-	const handleInputChange = (e) => {
+	const handleNextStep = () => {
+		if (step === 1) {
+			if (validateStep1()) {
+				setStep(step + 1)
+			}
+		} else {
+			setStep(step + 1)
+		}
+	}
+
+	const handleSetp1InputChange = (e) => {
 		const { name, value } = e.target
 		setProjectInfo((prevInfo) => ({ ...prevInfo, [name]: value }))
 	}
 
-	// Handle file upload
+	const handleSetp2InputChange = (e) => {
+		const { name, value } = e.target
+		setMinMaxValues((prevInfo) => ({ ...prevInfo, [name]: value }))
+	}
+
 	const handleFileUpload = (e) => {
 		const file = e.target.files[0]
 		if (file) {
 			const reader = new FileReader()
 			reader.onload = function (e) {
 				const content = e.target.result
-				// Parse CSV content using PapaParse library
 				Papa.parse(content, {
 					header: true,
 					dynamicTyping: true,
 					complete: (result) => {
 						const csvData = result.data
 
-						// Extract X, Y, Z values from CSV data
 						const { X, Y, Z } = csvData.reduce(
 							(acc, entry) => {
 								const { X, Y, Z } = entry
@@ -54,18 +66,14 @@ function App() {
 							},
 							{ X: [], Y: [], Z: [] }
 						)
-						console.log("Suka ~ file: App.jsx:54 ~ X:", X)
 
-						// Calculate min and max values for X, Y, Z
 						const minX = Math.min(...X)
-						console.log("Suka ~ file: App.jsx:59 ~ minX:", minX)
 						const maxX = Math.max(...X)
 						const minY = Math.min(...Y)
 						const maxY = Math.max(...Y)
 						const minZ = Math.min(...Z)
 						const maxZ = Math.max(...Z)
 
-						// Update minMaxValues state
 						setMinMaxValues({
 							min_X: minX,
 							max_X: maxX,
@@ -78,31 +86,52 @@ function App() {
 					},
 				})
 			}
-			reader.readAsText(file) // Read file as text
+			reader.readAsText(file)
 		}
 	}
 
-	// Handle moving to the next step
-	const handleNextStep = () => {
-		setStep(step + 1)
+	const validateStep1 = () => {
+		const errors = {}
+		if (!projectInfo.projectName) {
+			errors.projectName = "Project Name is required."
+		}
+		if (!projectInfo.projectDescription) {
+			errors.projectDescription = "Description is required."
+		}
+		if (!projectInfo.client) {
+			errors.client = "Client is required."
+		}
+		if (!projectInfo.constructor) {
+			errors.constructor = "Constructor is required."
+		}
+		setStep1Errors(errors)
+		return Object.keys(errors).length === 0
 	}
+
+	const validateStep2 = () => {
+		const errors = {}
+		if (minMaxValues.min_X === 0 || minMaxValues.max_X === 0) {
+			errors.min_X = "Min X and Max X must be nonzero."
+		}
+		if (minMaxValues.min_Y === 0 || minMaxValues.max_Y === 0) {
+			errors.min_Y = "Min Y and Max Y must be nonzero."
+		}
+		if (minMaxValues.min_Z === 0 || minMaxValues.max_Z === 0) {
+			errors.min_Z = "Min Z and Max Z must be nonzero."
+		}
+		setStep2Errors(errors)
+		return Object.keys(errors).length === 0
+	}
+
+	const isStep1Valid =
+		projectInfo.projectName &&
+		projectInfo.projectDescription &&
+		projectInfo.client &&
+		projectInfo.constructor
 
 	const handleShowResults = (e) => {
 		e.preventDefault()
-		// Validate data and navigate to Results if data is valid
-		if (
-			projectInfo.projectName &&
-			projectInfo.projectDescription &&
-			projectInfo.client &&
-			projectInfo.constructor
-			// &&
-			// minMaxValues.min_X !== 0 &&
-			// minMaxValues.max_X !== 0 &&
-			// minMaxValues.min_Y !== 0 &&
-			// minMaxValues.max_Y !== 0 &&
-			// minMaxValues.min_Z !== 0 &&
-			// minMaxValues.max_Z !== 0
-		) {
+		if (isStep1Valid && validateStep2()) {
 			navigate("/results", {
 				state: {
 					projectName: projectInfo.projectName,
@@ -112,9 +141,6 @@ function App() {
 					minMaxValues: minMaxValues,
 				},
 			})
-		} else {
-			// Handle validation error
-			alert("Please fill in all the required fields or upload a CSV file.")
 		}
 	}
 
@@ -124,15 +150,21 @@ function App() {
 				<form className="flex flex-col items-center justify-center gap-4 p-6 rounded-lg bg-gray-800 shadow-md">
 					<h1 className="text-white text-2xl font-semibold">XYZ ENGINE</h1>
 					{Object.keys(projectInfo).map((key) => (
-						<input
-							key={key}
-							className="bg-gray-700 text-white rounded-md p-2"
-							type="text"
-							name={key}
-							value={projectInfo[key]}
-							onChange={handleInputChange}
-							placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-						/>
+						<div key={key} className="flex flex-col gap-1">
+							<label className="text-white">
+								{key.charAt(0).toUpperCase() + key.slice(1)}:
+							</label>
+							<input
+								className="bg-gray-700 text-white rounded-md p-2"
+								type="text"
+								name={key}
+								value={projectInfo[key]}
+								onChange={handleSetp1InputChange}
+							/>
+							{step1Errors[key] && (
+								<p className="text-red-500">{step1Errors[key]}</p>
+							)}
+						</div>
 					))}
 					<button
 						type="button"
@@ -148,7 +180,6 @@ function App() {
 					<h2 className="text-xl font-semibold">
 						Step 2: Additional Information
 					</h2>
-					{/* Display projectInfo values from step 1 */}
 					<div className="p-4 bg-gray-800 rounded-lg shadow-md">
 						{Object.keys(projectInfo).map((key) => (
 							<div key={key} className="flex gap-1">
@@ -160,7 +191,7 @@ function App() {
 						))}
 					</div>
 					<form className="flex flex-col items-center gap-4 p-4 rounded-xl border border-2 border-gray-800 border-solid">
-						<p className="text-white bg-gray-700 p-2 ">
+						<p className="text-white bg-gray-700 p-2">
 							💡 Upload the file, or type them manually
 						</p>
 						<input
@@ -169,23 +200,23 @@ function App() {
 							onChange={handleFileUpload}
 							accept=".csv"
 						/>
-						{/* Display minMaxValues values */}
 						<div className="flex flex-col gap-2 p-4 bg-gray-800 rounded-lg shadow-md">
 							{Object.keys(minMaxValues).map((key) => (
-								<div
-									key={key}
-									className="flex justify-center items-center gap-1"
-								>
+								<div key={key} className="flex flex-col gap-1">
 									<label className="text-white min-w-50">
 										{key.replace("_", " ")}
 									</label>
 									<input
 										className="bg-gray-700 text-white rounded-md p-2"
-										type="text"
+										type="number"
 										name={key}
 										value={minMaxValues[key]}
-										onChange={handleInputChange}
+										onChange={handleSetp2InputChange}
+										step="0.01"
 									/>
+									{step2Errors[key] && (
+										<p className="text-red-500">{step2Errors[key]}</p>
+									)}
 								</div>
 							))}
 						</div>
