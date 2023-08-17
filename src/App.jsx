@@ -1,6 +1,6 @@
-import { useState } from "react"
-import Papa from "papaparse"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import CSVSelector from "./components/CSVSelector"
 
 function App() {
 	const [step, setStep] = useState(1)
@@ -10,14 +10,14 @@ function App() {
 		client: "",
 		constructor: "",
 	})
-	const [, setCsvFile] = useState(null)
+	const [csvFile, setCsvFile] = useState([])
 	const [minMaxValues, setMinMaxValues] = useState({
-		max_X: 0,
-		min_X: 0,
-		max_Y: 0,
-		min_Y: 0,
-		max_Z: 0,
-		min_Z: 0,
+		min_X: Number.POSITIVE_INFINITY,
+		min_Y: Number.POSITIVE_INFINITY,
+		min_Z: Number.POSITIVE_INFINITY,
+		max_X: Number.NEGATIVE_INFINITY,
+		max_Y: Number.NEGATIVE_INFINITY,
+		max_Z: Number.NEGATIVE_INFINITY,
 	})
 	const [step1Errors, setStep1Errors] = useState({})
 	const [step2Errors, setStep2Errors] = useState({})
@@ -34,61 +34,40 @@ function App() {
 		}
 	}
 
-	const handleSetp1InputChange = (e) => {
-		const { name, value } = e.target
+	const handleSetp1InputChange = ({ target }) => {
+		const { name, value } = target
 		setProjectInfo((prevInfo) => ({ ...prevInfo, [name]: value }))
 	}
 
-	const handleSetp2InputChange = (e) => {
-		const { name, value } = e.target
+	const handleSetp2InputChange = ({ target }) => {
+		const { name, value } = target
 		setMinMaxValues((prevInfo) => ({ ...prevInfo, [name]: value }))
 	}
 
-	const handleFileUpload = (e) => {
-		const file = e.target.files[0]
-		if (file) {
-			const reader = new FileReader()
-			reader.onload = function (e) {
-				const content = e.target.result
-				Papa.parse(content, {
-					header: true,
-					dynamicTyping: true,
-					complete: (result) => {
-						const csvData = result.data
+	useEffect(() => {
+		const newMinMaxValues = { ...minMaxValues }
 
-						const { X, Y, Z } = csvData.reduce(
-							(acc, entry) => {
-								const { X, Y, Z } = entry
-								acc.X.push(X)
-								acc.Y.push(Y)
-								acc.Z.push(Z)
-								return acc
-							},
-							{ X: [], Y: [], Z: [] }
-						)
+		if (csvFile.length > 0) {
+			csvFile.forEach((line) => {
+				const [_, x, y, z] = line
+				const X = parseInt(x, 16)
+				const Y = parseInt(y, 16)
+				const Z = parseInt(z, 16)
+				console.log("Suka ~ file: App.jsx:56 ~ Z:", typeof Z)
+				console.log("Suka ~ file: App.jsx:56 ~ Z:", Z)
 
-						const minX = Math.min(...X)
-						const maxX = Math.max(...X)
-						const minY = Math.min(...Y)
-						const maxY = Math.max(...Y)
-						const minZ = Math.min(...Z)
-						const maxZ = Math.max(...Z)
+				newMinMaxValues.min_X = Math.min(newMinMaxValues.min_X, X)
+				newMinMaxValues.min_Y = Math.min(newMinMaxValues.min_Y, Y)
+				newMinMaxValues.min_Z = Math.min(newMinMaxValues.min_Z, Z)
+				newMinMaxValues.max_X = Math.max(newMinMaxValues.max_X, X)
+				newMinMaxValues.max_Y = Math.max(newMinMaxValues.max_Y, Y)
+				newMinMaxValues.max_Z = Math.max(newMinMaxValues.max_Z, Z)
+			})
 
-						setMinMaxValues({
-							min_X: minX,
-							max_X: maxX,
-							min_Y: minY,
-							max_Y: maxY,
-							min_Z: minZ,
-							max_Z: maxZ,
-						})
-						setCsvFile(csvData)
-					},
-				})
-			}
-			reader.readAsText(file)
+			console.log("Suka ~ file: App.jsx:66 ~ newMinMaxValues:", newMinMaxValues)
+			setMinMaxValues(newMinMaxValues)
 		}
-	}
+	}, [csvFile])
 
 	const validateStep1 = () => {
 		const errors = {}
@@ -110,15 +89,17 @@ function App() {
 
 	const validateStep2 = () => {
 		const errors = {}
-		if (minMaxValues.min_X === 0 || minMaxValues.max_X === 0) {
-			errors.min_X = "Min X and Max X must be nonzero."
-		}
-		if (minMaxValues.min_Y === 0 || minMaxValues.max_Y === 0) {
-			errors.min_Y = "Min Y and Max Y must be nonzero."
-		}
-		if (minMaxValues.min_Z === 0 || minMaxValues.max_Z === 0) {
-			errors.min_Z = "Min Z and Max Z must be nonzero."
-		}
+		const axisLabels = ["X", "Y", "Z"]
+
+		axisLabels.forEach((axis) => {
+			const minKey = `min_${axis}`
+			const maxKey = `max_${axis}`
+
+			if (minMaxValues[minKey] === 0 || minMaxValues[maxKey] === 0) {
+				errors[minKey] = `Min_${axis} & Max_${axis} must be nonzero.`
+			}
+		})
+
 		setStep2Errors(errors)
 		return Object.keys(errors).length === 0
 	}
@@ -194,12 +175,7 @@ function App() {
 						<p className="text-white bg-gray-700 p-2">
 							💡 Upload the file, or type them manually
 						</p>
-						<input
-							type="file"
-							className="flex justify-center"
-							onChange={handleFileUpload}
-							accept=".csv"
-						/>
+						<CSVSelector onChange={(_data) => setCsvFile(_data)}></CSVSelector>
 						<div className="flex flex-col gap-2 p-4 bg-gray-800 rounded-lg shadow-md">
 							{Object.keys(minMaxValues).map((key) => (
 								<div key={key} className="flex flex-col gap-1">
