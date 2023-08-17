@@ -94,18 +94,27 @@ function App() {
 			projectInfo.projectName &&
 			projectInfo.projectDescription &&
 			projectInfo.client &&
-			projectInfo.constructor &&
-			minMaxValues.min_X !== 0 &&
-			minMaxValues.max_X !== 0 &&
-			minMaxValues.min_Y !== 0 &&
-			minMaxValues.max_Y !== 0 &&
-			minMaxValues.min_Z !== 0 &&
-			minMaxValues.max_Z !== 0
+			projectInfo.constructor
+			// &&
+			// minMaxValues.min_X !== 0 &&
+			// minMaxValues.max_X !== 0 &&
+			// minMaxValues.min_Y !== 0 &&
+			// minMaxValues.max_Y !== 0 &&
+			// minMaxValues.min_Z !== 0 &&
+			// minMaxValues.max_Z !== 0
 		) {
-			navigate("/results") // Navigate to Results route
+			navigate("/results", {
+				state: {
+					projectName: projectInfo.projectName,
+					projectDescription: projectInfo.projectDescription,
+					client: projectInfo.client,
+					constructor: projectInfo.constructor,
+					minMaxValues: minMaxValues,
+				},
+			})
 		} else {
 			// Handle validation error
-			alert("Please fill in all the required fields and upload a CSV file.")
+			alert("Please fill in all the required fields or upload a CSV file.")
 		}
 	}
 
