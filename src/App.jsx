@@ -1,5 +1,6 @@
 import { useState } from "react"
 import Papa from "papaparse"
+import { useNavigate } from "react-router-dom"
 
 function App() {
 	// State variables
@@ -19,6 +20,8 @@ function App() {
 		max_Z: 0,
 		min_Z: 0,
 	})
+
+	const navigate = useNavigate()
 
 	// Handle input field changes
 	const handleInputChange = (e) => {
@@ -82,6 +85,28 @@ function App() {
 	// Handle moving to the next step
 	const handleNextStep = () => {
 		setStep(step + 1)
+	}
+
+	const handleShowResults = (e) => {
+		e.preventDefault()
+		// Validate data and navigate to Results if data is valid
+		if (
+			projectInfo.projectName &&
+			projectInfo.projectDescription &&
+			projectInfo.client &&
+			projectInfo.constructor &&
+			minMaxValues.min_X !== 0 &&
+			minMaxValues.max_X !== 0 &&
+			minMaxValues.min_Y !== 0 &&
+			minMaxValues.max_Y !== 0 &&
+			minMaxValues.min_Z !== 0 &&
+			minMaxValues.max_Z !== 0
+		) {
+			navigate("/results") // Navigate to Results route
+		} else {
+			// Handle validation error
+			alert("Please fill in all the required fields and upload a CSV file.")
+		}
 	}
 
 	return (
@@ -236,6 +261,7 @@ function App() {
 						<button
 							type="submit"
 							className="btn bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:ring"
+							onClick={handleShowResults}
 						>
 							Show Results
 						</button>
