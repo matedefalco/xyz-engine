@@ -54,7 +54,6 @@ function App() {
 		if (csvFile.length > 0) {
 			csvFile.forEach((line, index) => {
 				const [_, x, y, z] = line
-				console.log("Suka ~ file: App.jsx:57 ~ line:", line)
 				const X = parseFloat(x)
 				const Y = parseFloat(y)
 				const Z = parseFloat(z)
@@ -73,8 +72,10 @@ function App() {
 		newMinMaxValues.max_X = Math.max(..._x)
 		newMinMaxValues.max_Y = Math.max(..._y)
 		newMinMaxValues.max_Z = Math.max(..._z)
-		console.log("Suka ~ file: App.jsx:80 ~ newMinMaxValues:", _x, _y, _z)
-		console.log("Suka ~ file: App.jsx:80 ~ newMinMaxValues:", newMinMaxValues)
+		console.log(
+			"Suka ~ file: App.jsx:70 ~ newMinMaxValues.min_X:",
+			newMinMaxValues.min_X
+		)
 	}, [csvFile])
 
 	const validateStep1 = () => {
@@ -134,35 +135,37 @@ function App() {
 	}
 
 	return (
-		<div className="flex flex-col items-center justify-center gap-4 p-6">
+		<div className="flex flex-col items-center justify-center gap-4 my-8">
 			{step === 1 && (
-				<form className="flex flex-col items-center justify-center gap-4 p-6 rounded-lg bg-gray-800 shadow-md">
-					<h1 className="text-white text-2xl font-semibold">XYZ ENGINE</h1>
-					{Object.keys(projectInfo).map((key) => (
-						<div key={key} className="flex flex-col gap-1">
-							<label className="text-white">
-								{key.charAt(0).toUpperCase() + key.slice(1)}:
-							</label>
-							<input
-								className="bg-gray-700 text-white rounded-md p-2"
-								type="text"
-								name={key}
-								value={projectInfo[key]}
-								onChange={handleSetp1InputChange}
-							/>
-							{step1Errors[key] && (
-								<p className="text-red-500">{step1Errors[key]}</p>
-							)}
-						</div>
-					))}
-					<button
-						type="button"
-						className="btn bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:ring"
-						onClick={handleNextStep}
-					>
-						Next
-					</button>
-				</form>
+				<div className="artboard phone-1">
+					<form className="flex flex-col items-center justify-center gap-4 w-full h-full p-6 rounded-lg bg-gray-800 shadow-md">
+						<h1 className="text-white text-2xl font-semibold">XYZ ENGINE</h1>
+						{Object.keys(projectInfo).map((key) => (
+							<div key={key} className="flex flex-col gap-1">
+								<label className="text-white">
+									{key.charAt(0).toUpperCase() + key.slice(1)}:
+								</label>
+								<input
+									className="input input-bordered w-full max-w-xs"
+									type="text"
+									name={key}
+									value={projectInfo[key]}
+									onChange={handleSetp1InputChange}
+								/>
+								{step1Errors[key] && (
+									<p className="text-red-500">{step1Errors[key]}</p>
+								)}
+							</div>
+						))}
+						<button
+							type="button"
+							className="btn btn-primary"
+							onClick={handleNextStep}
+						>
+							Next
+						</button>
+					</form>
+				</div>
 			)}
 			{step === 2 && (
 				<div className="flex flex-col items-center justify-center gap-4">
@@ -180,18 +183,31 @@ function App() {
 						))}
 					</div>
 					<form className="flex flex-col items-center gap-4 p-4 rounded-xl border border-2 border-gray-800 border-solid">
-						<p className="text-white bg-gray-700 p-2">
-							💡 Upload the file, or type them manually
-						</p>
+						<div className="alert">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								className="stroke-info shrink-0 w-6 h-6"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+								></path>
+							</svg>
+							<span>Upload the file, or type them manually</span>
+						</div>
 						<CSVSelector onChange={(_data) => setCsvFile(_data)}></CSVSelector>
-						<div className="flex flex-col gap-2 p-4 bg-gray-800 rounded-lg shadow-md">
+						<div className="flex flex-col gap-2 p-4 bg-gray-800 rounded-lg w-80 shadow-md">
 							{Object.keys(minMaxValues).map((key) => (
 								<div key={key} className="flex flex-col gap-1">
 									<label className="text-white min-w-50">
 										{key.replace("_", " ")}
 									</label>
 									<input
-										className="bg-gray-700 text-white rounded-md p-2"
+										className="input input-bordered w-full max-w-xs"
 										type="number"
 										name={key}
 										value={minMaxValues[key]}
@@ -206,7 +222,7 @@ function App() {
 						</div>
 						<button
 							type="submit"
-							className="btn bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:ring"
+							className="btn btn-primary"
 							onClick={handleShowResults}
 						>
 							Show Results

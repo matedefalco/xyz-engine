@@ -21,18 +21,18 @@ const Results = () => {
 	return (
 		<div className="flex flex-col items-center justify-center gap-4 p-6">
 			<h1 className="text-2xl font-semibold">Results</h1>
-			<table className="table-auto bg-gray-800 rounded-lg shadow-md p-4">
+			<table className="table">
 				<thead>
 					<tr>
-						<th className="p-2 text-white">Field</th>
-						<th className="p-2 text-white">Value</th>
+						<th>Field</th>
+						<th>Value</th>
 					</tr>
 				</thead>
 				<tbody>
 					{fields.map((field, index) => (
 						<tr key={index}>
-							<td className="p-2 text-white font-semibold">{field.label}</td>
-							<td className="p-2 text-white">{field.value}</td>
+							<td>{field.label}</td>
+							<td>{field.value}</td>
 						</tr>
 					))}
 				</tbody>

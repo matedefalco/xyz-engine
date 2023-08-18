@@ -24,7 +24,7 @@ const CSVSelector = ({ onChange }) => {
 			type="file"
 			accept=".csv"
 			onChange={handleFileChange}
-			className="flex justify-center"
+			className="file-input w-full max-w-xs"
 		/>
 	)
 }
