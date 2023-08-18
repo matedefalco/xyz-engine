@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom"
 import CSVSelector from "./components/CSVSelector"
 
 function App() {
+	const _x = []
+	const _y = []
+	const _z = []
+
 	const [step, setStep] = useState(1)
 	const [projectInfo, setProjectInfo] = useState({
 		projectName: "",
@@ -48,25 +52,29 @@ function App() {
 		const newMinMaxValues = { ...minMaxValues }
 
 		if (csvFile.length > 0) {
-			csvFile.forEach((line) => {
+			csvFile.forEach((line, index) => {
 				const [_, x, y, z] = line
-				const X = parseInt(x, 16)
-				const Y = parseInt(y, 16)
-				const Z = parseInt(z, 16)
-				console.log("Suka ~ file: App.jsx:56 ~ Z:", typeof Z)
-				console.log("Suka ~ file: App.jsx:56 ~ Z:", Z)
-
-				newMinMaxValues.min_X = Math.min(newMinMaxValues.min_X, X)
-				newMinMaxValues.min_Y = Math.min(newMinMaxValues.min_Y, Y)
-				newMinMaxValues.min_Z = Math.min(newMinMaxValues.min_Z, Z)
-				newMinMaxValues.max_X = Math.max(newMinMaxValues.max_X, X)
-				newMinMaxValues.max_Y = Math.max(newMinMaxValues.max_Y, Y)
-				newMinMaxValues.max_Z = Math.max(newMinMaxValues.max_Z, Z)
+				console.log("Suka ~ file: App.jsx:57 ~ line:", line)
+				const X = parseFloat(x)
+				const Y = parseFloat(y)
+				const Z = parseFloat(z)
+				if (index > 0) {
+					_x.push(X)
+					_y.push(Y)
+					_z.push(Z)
+				}
 			})
-
-			console.log("Suka ~ file: App.jsx:66 ~ newMinMaxValues:", newMinMaxValues)
 			setMinMaxValues(newMinMaxValues)
 		}
+
+		newMinMaxValues.min_X = Math.min(..._x)
+		newMinMaxValues.min_Y = Math.min(..._y)
+		newMinMaxValues.min_Z = Math.min(..._z)
+		newMinMaxValues.max_X = Math.max(..._x)
+		newMinMaxValues.max_Y = Math.max(..._y)
+		newMinMaxValues.max_Z = Math.max(..._z)
+		console.log("Suka ~ file: App.jsx:80 ~ newMinMaxValues:", _x, _y, _z)
+		console.log("Suka ~ file: App.jsx:80 ~ newMinMaxValues:", newMinMaxValues)
 	}, [csvFile])
 
 	const validateStep1 = () => {
