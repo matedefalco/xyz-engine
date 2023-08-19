@@ -1,9 +1,29 @@
 import { useLocation } from "react-router-dom"
+import { Button } from "reactstrap"
+import jsPDF from "jspdf"
 
 const Results = () => {
 	const location = useLocation()
 	const { projectName, projectDescription, client, constructor, minMaxValues } =
 		location.state
+
+	const pdfGenerate = () => {
+		const doc = new jsPDF("landscape", "px", "a4", "false")
+		doc.text("Project Information", 10, 10)
+
+		doc.text("Project Name: " + projectName, 10, 30)
+		doc.text("Description: " + projectDescription, 10, 40)
+		doc.text("Client: " + client, 10, 50)
+		doc.text("Constructor: " + constructor, 10, 60)
+		doc.text("Min X: " + minMaxValues.min_X, 10, 70)
+		doc.text("Max X: " + minMaxValues.max_X, 10, 80)
+		doc.text("Min Y: " + minMaxValues.min_Y, 10, 90)
+		doc.text("Max Y: " + minMaxValues.max_Y, 10, 100)
+		doc.text("Min Z: " + minMaxValues.min_Z, 10, 110)
+		doc.text("Max Z: " + minMaxValues.max_Z, 10, 120)
+
+		doc.save("results.pdf")
+	}
 
 	const fields = [
 		{ label: "Project Name", value: projectName },
@@ -37,6 +57,9 @@ const Results = () => {
 					))}
 				</tbody>
 			</table>
+			<Button className="btn btn-primary" onClick={pdfGenerate}>
+				Download PDF
+			</Button>
 		</div>
 	)
 }
